@@ -6,16 +6,18 @@
       </div>
       <div class="col-xs-6">
         <span class="pull-right">
-          <button class="btn btn-success pull-right">New Contact</button>
+           <a class="btn btn-success pull-right"
+              routerLinkActive="active"
+              [routerLink]="['new']"
+           >New Contact</a>
         </span>
       </div>
     </div>
   </div>
   <div class="panel-body">
     <cms-contact-item
-      *ngFor="let contact of contacts"
-      [contact]="contact"
-      (click)="onSelected(contact)">
-    </cms-contact-item>
+        *ngFor="let contact of contacts"
+        [contact]="contact"
+    ></cms-contact-item>
   </div>
 </div>

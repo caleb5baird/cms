@@ -7,8 +7,13 @@
       </div>
       <div class="col-xs-6">
         <span class="pull-right btn-toolbar">
-          <button class="btn btn-primary">Edit</button>
-          <button class="btn btn-danger">Delete</button>
+           <a class="btn btn-primary"
+              routerLinkActive="active"
+              [routerLink]="['edit']"
+           >Edit</a>
+           <a class="btn btn-danger"
+              (click)="onDelete()"
+           >Delete</a>
         </span>
       </div>
     </div>
