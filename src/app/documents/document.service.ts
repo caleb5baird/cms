@@ -1,4 +1,5 @@
-import { EventEmitter, Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
+import { Subject } from 'rxjs';
 import { Document } from '../documents/document.model';
 import { MOCKDOCUMENTS } from './MOCKDOCUMENTS';
 
@@ -8,12 +9,14 @@ import { MOCKDOCUMENTS } from './MOCKDOCUMENTS';
 export class DocumentService {
 
   documents: Document[] = [];
+  maxDocumentId = 0;
 
-  documentSelectedEvent = new EventEmitter<Document>();
-  documentChangedEvent = new EventEmitter<Document[]>();
+  documentSelectedEvent = new Subject<Document>();
+  documentListChangedEvent = new Subject<Document[]>();
 
   constructor() {
     this.documents = MOCKDOCUMENTS;
+    this.maxDocumentId = this.getMaxId();
   }
 
   getDocuments(): Document[] { return this.documents.slice() }
@@ -22,19 +25,40 @@ export class DocumentService {
     return this.documents.find(document => document.id === id);
   }
 
-  deleteDocument(document: Document) {
-    if (!document) {
-      return;
+  getMaxId(): number {
+    let ids = this.documents.map(document => parseInt(document.id))
+    return Math.max(...ids);
+  }
+
+  addDocument(document: Document): void {
+    if (document) {
+      ++this.maxDocumentId;
+      document.id = this.maxDocumentId.toString();
+      this.documents.push(document);
+      this.documentListChangedEvent.next(this.documents.slice());
     }
+  }
 
-    const pos = this.documents.indexOf(document);
+  updateDocument(originalDocument: Document, newDocument: Document) {
+    if (originalDocument && newDocument) {
+      const pos = this.documents.indexOf(originalDocument);
 
-    if (pos < 0) {
-      return;
+      if (pos != 0) {
+        newDocument.id = originalDocument.id
+        this.documents[pos] = newDocument
+        this.documentListChangedEvent.next(this.documents.slice())
+      }
     }
+  }
 
-    this.documents.splice(pos, 1);
+  deleteDocument(document: Document): void {
+    if (document) {
+      const pos = this.documents.indexOf(document);
 
-    this.documentChangedEvent.emit(this.documents.slice());
+      if (pos != 0) {
+        this.documents.splice(pos, 1);
+        this.documentListChangedEvent.next(this.documents.slice());
+      }
+    }
   }
 }
