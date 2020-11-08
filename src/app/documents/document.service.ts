@@ -43,7 +43,7 @@ export class DocumentService {
     if (originalDocument && newDocument) {
       const pos = this.documents.indexOf(originalDocument);
 
-      if (pos != 0) {
+      if (pos != -1) {
         newDocument.id = originalDocument.id
         this.documents[pos] = newDocument
         this.documentListChangedEvent.next(this.documents.slice())
@@ -55,7 +55,7 @@ export class DocumentService {
     if (document) {
       const pos = this.documents.indexOf(document);
 
-      if (pos != 0) {
+      if (pos != -1) {
         this.documents.splice(pos, 1);
         this.documentListChangedEvent.next(this.documents.slice());
       }

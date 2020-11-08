@@ -44,7 +44,7 @@ export class ContactService {
     if (originalContact && newContact) {
       const pos = this.contacts.indexOf(originalContact);
 
-      if (pos != 0) {
+      if (pos != -1) {
         newContact.id = originalContact.id
         this.contacts[pos] = newContact
         this.contactListChangedEvent.next(this.contacts.slice())
@@ -56,7 +56,7 @@ export class ContactService {
     if (contact) {
       const pos = this.contacts.indexOf(contact);
 
-      if (pos != 0) {
+      if (pos != -1) {
         this.contacts.splice(pos, 1);
         this.contactListChangedEvent.next(this.contacts.slice());
       }
