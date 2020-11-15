@@ -1,6 +1,6 @@
 import { Message } from './message.model';
 import { Injectable } from '@angular/core';
-import { MOCKMESSAGES } from './MOCKMESSAGES';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Subject } from 'rxjs';
 
 @Injectable({
@@ -12,9 +12,15 @@ export class MessageService {
   messageListChangedEvent = new Subject<Message[]>();
   maxMessagesId = 0;
 
-  constructor() {
-    this.messages = MOCKMESSAGES;
-    this.maxMessagesId = this.getMaxId();
+  constructor(
+    private http: HttpClient
+  ) {
+    http.get('https://cms-app-77a0c.firebaseio.com/messages.json')
+      .subscribe((messages: Message[]) => {
+        this.messages = messages;
+        this.maxMessagesId = this.getMaxId();
+        this.messageListChangedEvent.next(this.messages.slice());
+      }, (error:any) => console.error(error))
   }
 
   getMessages(): Message[] { return this.messages.slice() }
@@ -33,7 +39,17 @@ export class MessageService {
       ++this.maxMessagesId;
       message.id = this.maxMessagesId.toString();
       this.messages.push(message);
-      this.messageListChangedEvent.next(this.messages.slice());
+      this.storeMessages();
     }
+  }
+
+  storeMessages(): void {
+    let headers = new HttpHeaders({'content-type': 'application/json'});
+    this.http.put('https://cms-app-77a0c.firebaseio.com/messages.json',
+                  JSON.stringify(this.messages),
+                  {headers: headers})
+      .subscribe(() => {
+        this.messageListChangedEvent.next(this.messages.slice());
+      }, (error:any) => console.error(error))
   }
 }

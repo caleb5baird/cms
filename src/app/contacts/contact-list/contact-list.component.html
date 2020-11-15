@@ -1,23 +1,43 @@
 <div class="panel panel-default">
-  <div class="panel-heading">
-    <div class="row">
-      <div class="col-xs-6">
-        <h3>Contacts</h3>
+   <div class="panel-heading">
+      <div class="row">
+         <div class="col-xs-12">
+            <div class="panel panel-default">
+               <div class="panel-heading">
+                  <div class="row">
+                     <span class="title pad-left-right">Contacts</span>
+                  </div>
+                  <div class="row">
+                     <div class="input-group pull-left pad-left-right col-xs-7">
+                        <input
+                            name="searchBox"
+                            id="searchBox"
+                            #searchBox
+                            (keyup)="search(searchBox.value)"
+                            type="text"
+                            value=""
+                            class="form-control"
+                            placeholder="Enter a search value"
+                        />
+                        <div class="glyphicon glyphicon-search input-group-addon"
+                             (click)="search(searchBox.value)"
+                        ></div>
+                     </div>
+                     <div class="pull-right pad-left-right">
+                        <a class="btn btn-success"
+                           [routerLink]="['new']"
+                        >New Contact</a>
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </div>
       </div>
-      <div class="col-xs-6">
-        <span class="pull-right">
-           <a class="btn btn-success pull-right"
-              routerLinkActive="active"
-              [routerLink]="['new']"
-           >New Contact</a>
-        </span>
-      </div>
-    </div>
-  </div>
-  <div class="panel-body">
-    <cms-contact-item
-        *ngFor="let contact of contacts"
-        [contact]="contact"
-    ></cms-contact-item>
-  </div>
+   </div>
+   <div class="panel-body">
+      <cms-contact-item
+          *ngFor="let contact of contacts | contactsFilter:term"
+          [contact]="contact"
+      ></cms-contact-item>
+   </div>
 </div>
