@@ -6,4 +6,5 @@ export class Document {
     public url: string = "URL",
     public children: Document[] = null
   ) {}
+  _id?: string;
 }

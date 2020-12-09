@@ -62,9 +62,20 @@ export class ContactService {
       const pos = this.contacts.indexOf(originalContact);
 
       if (pos != -1) {
-        newContact.id = originalContact.id
-        this.contacts[pos] = newContact
-        this.storeContacts()
+        newContact.id = originalContact.id;
+        newContact._id = originalContact._id;
+
+        const headers = new HttpHeaders({'Content-Type': 'application/json'});
+
+        // update database
+        this.http.put('http://localhost:3000/contacts/' + originalContact.id,
+                      newContact, { headers: headers })
+          .subscribe(
+            (response: Response) => {
+              this.contacts[pos] = newContact
+              this.storeContacts()
+            }
+          );
       }
     }
   }
@@ -74,8 +85,14 @@ export class ContactService {
       const pos = this.contacts.indexOf(contact);
 
       if (pos != -1) {
-        this.contacts.splice(pos, 1);
-        this.storeContacts()
+
+        this.http.delete('http://localhost:3000/contacts/' + contact.id)
+          .subscribe(
+            (response: Response) => {
+              this.contacts.splice(pos, 1);
+              this.storeContacts()
+            }
+          );
       }
     }
   }

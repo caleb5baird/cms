@@ -7,4 +7,5 @@ export  class Contact {
     public imageUrl: string = "assets/image/default-profile.png",
     public group: Contact[] = null
   ) {}
+  _id?: string;
 }
