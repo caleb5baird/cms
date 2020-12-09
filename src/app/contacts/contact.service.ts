@@ -17,9 +17,9 @@ export class ContactService {
   constructor(
     private http: HttpClient
   ) {
-    http.get('https://cms-app-77a0c.firebaseio.com/contacts.json')
-      .subscribe((contacts: Contact[]) => {
-        this.contacts = contacts;
+    this.http.get('http://localhost:3000/contacts')
+      .subscribe((responseData: {message: string, contacts: Contact[]}) => {
+        this.contacts = responseData.contacts;
         this.maxContactId = this.getMaxId();
         this.contacts.sort((lhs, rhs) =>
           lhs.name.localeCompare(rhs.name))
@@ -40,12 +40,20 @@ export class ContactService {
 
   addContact(contact: Contact): void {
     if (contact) {
-      ++this.maxContactId;
-      contact.id = this.maxContactId.toString();
-      this.contacts.push(contact);
-      this.contacts.sort((lhs, rhs) =>
-        lhs.name.localeCompare(rhs.name))
-      this.storeContacts()
+      contact.id = '';
+      // ++this.maxContactId;
+
+      const headers = new HttpHeaders({'Content-Type': 'application/json'});
+
+      this.http.post<{ message: string, contact: Contact }>
+        ('http://localhost:3000/contacts', contact, { headers: headers })
+        .subscribe((responseData: {message: string, contact: Contact}) => {
+          // add new document to documents
+          this.contacts.push(responseData.contact);
+          this.contacts.sort((lhs, rhs) =>
+            lhs.name.localeCompare(rhs.name))
+          this.storeContacts()
+        });
     }
   }
 

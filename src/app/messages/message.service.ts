@@ -15,9 +15,9 @@ export class MessageService {
   constructor(
     private http: HttpClient
   ) {
-    http.get('https://cms-app-77a0c.firebaseio.com/messages.json')
-      .subscribe((messages: Message[]) => {
-        this.messages = messages;
+    this.http.get('http://localhost:3000/messages')
+      .subscribe((responseData: {message: string, messages: Message[]}) => {
+        this.messages = responseData.messages;
         this.maxMessagesId = this.getMaxId();
         this.messageListChangedEvent.next(this.messages.slice());
       }, (error:any) => console.error(error))
@@ -30,16 +30,23 @@ export class MessageService {
   }
 
   getMaxId(): number {
-    let ids = this.messages.map(document => parseInt(document.id))
+    let ids = this.messages.map(message => parseInt(message.id))
     return Math.max(...ids);
   }
 
   addMessage(message: Message): void {
     if (message) {
-      ++this.maxMessagesId;
-      message.id = this.maxMessagesId.toString();
-      this.messages.push(message);
-      this.storeMessages();
+      message.id = '';
+
+      const headers = new HttpHeaders({'Content-Type': 'application/json'});
+
+      this.http.post<{ resultMessage: string, message: Message }>
+        ('http://localhost:3000/messages', message, { headers: headers })
+        .subscribe((responseData: {resultMessage: string, message: Message}) => {
+          // add new message to messages
+          this.messages.push(responseData.message);
+          this.storeMessages();
+        });
     }
   }
 

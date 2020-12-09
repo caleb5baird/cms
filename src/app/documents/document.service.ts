@@ -17,9 +17,9 @@ export class DocumentService {
   constructor(
     private http: HttpClient
   ) {
-    http.get('https://cms-app-77a0c.firebaseio.com/documents.json')
-      .subscribe((documents: Document[]) => {
-        this.documents = documents;
+    this.http.get('http://localhost:3000/documents')
+      .subscribe((responseData: {message: string, documents: Document[]}) => {
+        this.documents = responseData.documents;
         this.maxDocumentId = this.getMaxId();
         this.documents.sort((lhs, rhs) =>
           lhs.name.localeCompare(rhs.name))
@@ -40,10 +40,18 @@ export class DocumentService {
 
   addDocument(document: Document): void {
     if (document) {
-      ++this.maxDocumentId;
-      document.id = this.maxDocumentId.toString();
-      this.documents.push(document);
-      this.storeDocuments()
+      document.id = '';
+
+      const headers = new HttpHeaders({'Content-Type': 'application/json'});
+
+      // add to database
+      this.http.post<{ message: string, document: Document }>
+        ('http://localhost:3000/documents', document, { headers: headers })
+        .subscribe((responseData: {message: string, document: Document}) => {
+          // add new document to documents
+          this.documents.push(responseData.document);
+          this.storeDocuments()
+        });
     }
   }
 
@@ -52,9 +60,20 @@ export class DocumentService {
       const pos = this.documents.indexOf(originalDocument);
 
       if (pos != -1) {
-        newDocument.id = originalDocument.id
-        this.documents[pos] = newDocument
-        this.storeDocuments()
+        newDocument.id = originalDocument.id;
+        newDocument._id = originalDocument._id;
+
+        const headers = new HttpHeaders({'Content-Type': 'application/json'});
+
+        // update database
+        this.http.put('http://localhost:3000/documents/' + originalDocument.id,
+                      newDocument, { headers: headers })
+          .subscribe(
+            (response: Response) => {
+              this.documents[pos] = newDocument;
+              this.storeDocuments()
+            }
+          );
       }
     }
   }
@@ -64,13 +83,24 @@ export class DocumentService {
       const pos = this.documents.indexOf(document);
 
       if (pos != -1) {
-        this.documents.splice(pos, 1);
-        this.storeDocuments()
+
+        this.http.delete('http://localhost:3000/documents/' + document.id)
+          .subscribe(
+            (response: Response) => {
+              this.documents.splice(pos, 1);
+              this.storeDocuments()
+            }
+          );
       }
     }
   }
 
   storeDocuments(): void {
+
+    // First make sure they are sorted
+    this.documents.sort((lhs, rhs) =>
+      lhs.name.localeCompare(rhs.name))
+
     let headers = new HttpHeaders({'content-type': 'application/json'});
     this.http.put('https://cms-app-77a0c.firebaseio.com/documents.json',
                   JSON.stringify(this.documents),
